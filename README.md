@@ -1,6 +1,6 @@
 # BugTrack - Issue Tracking System
 
-**screenshot**
+##screenshot##
 
 ![image](https://github.com/user-attachments/assets/24e43abd-acc0-4461-99b6-30f66cb422b9)
 
