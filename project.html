@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugTrack - Issue Tracking System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Animation for status badges */
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        .status-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Custom transitions */
+        .slide-fade-enter-active {
+            transition: all 0.3s ease-out;
+        }
+        .slide-fade-leave-active {
+            transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
+        }
+        .slide-fade-enter-from,
+        .slide-fade-leave-to {
+            transform: translateX(20px);
+            opacity: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+    <!-- Main Container -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="hidden md:flex md:flex-shrink-0">
+            <div class="flex flex-col w-64 bg-indigo-800 text-white">
+                <div class="flex items-center justify-center h-16 px-4 border-b border-indigo-700">
+                    <div class="flex items-center">
+                        <i class="fas fa-bug text-2xl mr-2 text-yellow-400"></i>
+                        <span class="text-xl font-bold">BugTrack</span>
+                    </div>
+                </div>
+                <div class="flex flex-col flex-grow px-4 py-4 overflow-y-auto">
+                    <div class="space-y-1">
+                        <a href="#" class="flex items-center px-2 py-3 text-sm font-medium rounded-md bg-indigo-900 text-white group">
+                            <i class="fas fa-tachometer-alt mr-3 text-indigo-300"></i>
+                            Dashboard
+                        </a>
+                        <a href="#" class="flex items-center px-2 py-3 text-sm font-medium rounded-md hover:bg-indigo-700 hover:text-white group">
+                            <i class="fas fa-tasks mr-3 text-indigo-300"></i>
+                            My Tasks
+                        </a>
+                        <a href="#" class="flex items-center px-2 py-3 text-sm font-medium rounded-md hover:bg-indigo-700 hover:text-white group">
+                            <i class="fas fa-bug mr-3 text-indigo-300"></i>
+                            All Issues
+                        </a>
+                        <a href="#" class="flex items-center px-2 py-3 text-sm font-medium rounded-md hover:bg-indigo-700 hover:text-white group">
+                            <i class="fas fa-project-diagram mr-3 text-indigo-300"></i>
+                            Projects
+                        </a>
+                        <a href="#" class="flex items-center px-2 py-3 text-sm font-medium rounded-md hover:bg-indigo-700 hover:text-white group">
+                            <i class="fas fa-users mr-3 text-indigo-300"></i>
+                            Team
+                        </a>
+                        <a href="#" class="flex items-center px-2 py-3 text-sm font-medium rounded-md hover:bg-indigo-700 hover:text-white group">
+                            <i class="fas fa-chart-bar mr-3 text-indigo-300"></i>
+                            Reports
+                        </a>
+                        <a href="#" class="flex items-center px-2 py-3 text-sm font-medium rounded-md hover:bg-indigo-700 hover:text-white group">
+                            <i class="fas fa-cog mr-3 text-indigo-300"></i>
+                            Settings
+                        </a>
+                    </div>
+                    
+                    <div class="mt-auto mb-4">
+                        <div class="border-t border-indigo-700 pt-4">
+                            <div class="flex items-center">
+                                <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-white">John Doe</p>
+                                    <p class="text-xs font-medium text-indigo-200 group-hover:text-white">Admin</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex flex-col flex-1 overflow-hidden">
+            <!-- Top Navigation -->
+            <div class="flex items-center justify-between h-16 bg-white border-b border-gray-200 px-4">
+                <!-- Mobile menu button -->
+                <button class="md:hidden text-gray-500 focus:outline-none">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <!-- Search bar -->
+                <div class="flex-1 max-w-md ml-4 md:ml-6">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Search issues..." type="search">
+                    </div>
+                </div>
+                
+                <!-- Right side icons -->
+                <div class="flex items-center space-x-4">
+                    <button class="p-1 text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <i class="far fa-bell text-xl"></i>
+                    </button>
+                    <button class="p-1 text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <i class="far fa-envelope text-xl"></i>
+                    </button>
+                    <button class="p-1 text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <i class="far fa-question-circle text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Main Content Area -->
+            <div class="flex-1 overflow-auto p-4 md:p-6">
+                <div class="max-w-7xl mx-auto">
+                    <!-- Header -->
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">Issue Dashboard</h1>
+                            <p class="mt-1 text-sm text-gray-500">Track and manage all your project issues in one place</p>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <button id="createIssueBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <i class="fas fa-plus mr-2"></i> Create Issue
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+                        <!-- Open Issues -->
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
+                                        <i class="fas fa-exclamation-circle text-white text-xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Open Issues</dt>
+                                            <dd>
+                                                <div class="text-lg font-medium text-gray-900">24</div>
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="text-xs text-gray-500">+2 from yesterday</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- In Progress -->
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
+                                        <i class="fas fa-spinner text-white text-xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">In Progress</dt>
+                                            <dd>
+                                                <div class="text-lg font-medium text-gray-900">12</div>
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="text-xs text-gray-500">+3 from yesterday</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Resolved -->
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+                                        <i class="fas fa-check-circle text-white text-xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Resolved</dt>
+                                            <dd>
+                                                <div class="text-lg font-medium text-gray-900">42</div>
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="text-xs text-gray-500">+5 from yesterday</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Total Issues -->
+                        <div class="bg-white overflow-hidden shadow rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                                        <i class="fas fa-bug text-white text-xl"></i>
+                                    </div>
+                                    <div class="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt class="text-sm font-medium text-gray-500 truncate">Total Issues</dt>
+                                            <dd>
+                                                <div class="text-lg font-medium text-gray-900">78</div>
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="text-xs text-gray-500">+10 from last week</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Filters and Actions -->
+                    <div class="bg-white shadow rounded-lg mb-6 p-4">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                            <div class="flex space-x-2 mb-4 md:mb-0">
+                                <div class="relative">
+                                    <select class="appearance-none bg-gray-100 border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-indigo-500 text-sm">
+                                        <option>All Projects</option>
+                                        <option>Website Redesign</option>
+                                        <option>Mobile App</option>
+                                        <option>API Development</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                                
+                                <div class="relative">
+                                    <select class="appearance-none bg-gray-100 border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-indigo-500 text-sm">
+                                        <option>All Status</option>
+                                        <option>Open</option>
+                                        <option>In Progress</option>
+                                        <option>Resolved</option>
+                                        <option>Closed</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                                
+                                <div class="relative">
+                                    <select class="appearance-none bg-gray-100 border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-indigo-500 text-sm">
+                                        <option>All Priority</option>
+                                        <option>Critical</option>
+                                        <option>High</option>
+                                        <option>Medium</option>
+                                        <option>Low</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex space-x-2">
+                                <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i class="fas fa-filter mr-2"></i> Filter
+                                </button>
+                                <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i class="fas fa-download mr-2"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Issues Table -->
+                    <div class="bg-white shadow rounded-lg overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            ID
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Title
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Project
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Priority
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Assigned To
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Due Date
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <!-- Issue 1 -->
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+                                            #BUG-124
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">Login page not loading on mobile</div>
+                                            <div class="text-sm text-gray-500">UI/UX</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            Mobile App
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 status-pulse">
+                                                Open
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                Critical
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60" alt="">
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">Jane Cooper</div>
+                                                    <div class="text-sm text-gray-500">Frontend</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="text-red-600">Yesterday</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-eye"></i></button>
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-pencil-alt"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash-alt"></i></button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Issue 2 -->
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+                                            #BUG-123
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">API returns 500 error on large payload</div>
+                                            <div class="text-sm text-gray-500">Backend</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            API Development
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                In Progress
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                                                High
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60" alt="">
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">John Smith</div>
+                                                    <div class="text-sm text-gray-500">Backend</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            Tomorrow
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-eye"></i></button>
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-pencil-alt"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash-alt"></i></button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Issue 3 -->
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+                                            #BUG-122
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">Dashboard charts not updating</div>
+                                            <div class="text-sm text-gray-500">Frontend</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            Website Redesign
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Resolved
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                Medium
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60" alt="">
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">Michael Johnson</div>
+                                                    <div class="text-sm text-gray-500">Frontend</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="text-green-600">Completed</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-eye"></i></button>
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-pencil-alt"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash-alt"></i></button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Issue 4 -->
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+                                            #BUG-121
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">Missing validation on contact form</div>
+                                            <div class="text-sm text-gray-500">Backend</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            Website Redesign
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                Testing
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                Low
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60" alt="">
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">Robert Davis</div>
+                                                    <div class="text-sm text-gray-500">QA</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            Next Week
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-eye"></i></button>
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-pencil-alt"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash-alt"></i></button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Issue 5 -->
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+                                            #BUG-120
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">Performance issues on product listing</div>
+                                            <div class="text-sm text-gray-500">Performance</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            Website Redesign
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                On Hold
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                                                High
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60" alt="">
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">Sarah Wilson</div>
+                                                    <div class="text-sm text-gray-500">Full Stack</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            Next Month
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-eye"></i></button>
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-pencil-alt"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash-alt"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Pagination -->
+                        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                            <div class="flex-1 flex justify-between sm:hidden">
+                                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    Previous
+                                </a>
+                                <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    Next
+                                </a>
+                            </div>
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of <span class="font-medium">24</span> results
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">Previous</span>
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                        <a href="#" aria-current="page" class="z-10 bg-indigo-50 border-indigo-500 text-indigo-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                            1
+                                        </a>
+                                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                            2
+                                        </a>
+                                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                            3
+                                        </a>
+                                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">Next</span>
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Issue Modal -->
+    <div id="createIssueModal" class="fixed z-10 inset-0 overflow-y-auto hidden">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-bug text-indigo-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Create New Issue
+                            </h3>
+                            <div class="mt-2">
+                                <form class="space-y-4">
+                                    <div>
+                                        <label for="issueTitle" class="block text-sm font-medium text-gray-700">Title</label>
+                                        <input type="text" name="issueTitle" id="issueTitle" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="issueDescription" class="block text-sm font-medium text-gray-700">Description</label>
+                                        <textarea id="issueDescription" name="issueDescription" rows="3" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                        <div>
+                                            <label for="issueProject" class="block text-sm font-medium text-gray-700">Project</label>
+                                            <select id="issueProject" name="issueProject" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                                <option>Website Redesign</option>
+                                                <option>Mobile App</option>
+                                                <option>API Development</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label for="issuePriority" class="block text-sm font-medium text-gray-700">Priority</label>
+                                            <select id="issuePriority" name="issuePriority" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                                <option>Low</option>
+                                                <option>Medium</option>
+                                                <option>High</option>
+                                                <option>Critical</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label for="issueType" class="block text-sm font-medium text-gray-700">Type</label>
+                                            <select id="issueType" name="issueType" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                                <option>Bug</option>
+                                                <option>Feature</option>
+                                                <option>Task</option>
+                                                <option>Improvement</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <div>
+                                            <label for="issueAssignee" class="block text-sm font-medium text-gray-700">Assignee</label>
+                                            <select id="issueAssignee" name="issueAssignee" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                                <option>Unassigned</option>
+                                                <option>Jane Cooper</option>
+                                                <option>John Smith</option>
+                                                <option>Michael Johnson</option>
+                                                <option>Robert Davis</option>
+                                                <option>Sarah Wilson</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label for="issueDueDate" class="block text-sm font-medium text-gray-700">Due Date</label>
+                                            <input type="date" name="issueDueDate" id="issueDueDate" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="issueLabels" class="block text-sm font-medium text-gray-700">Labels</label>
+                                        <input type="text" name="issueLabels" id="issueLabels" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="UI, Backend, Bug, etc.">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Create Issue
+                    </button>
+                    <button id="cancelCreateIssue" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Modal handling
+        const createIssueBtn = document.getElementById('createIssueBtn');
+        const createIssueModal = document.getElementById('createIssueModal');
+        const cancelCreateIssue = document.getElementById('cancelCreateIssue');
+        
+        createIssueBtn.addEventListener('click', () => {
+            createIssueModal.classList.remove('hidden');
+        });
+        
+        cancelCreateIssue.addEventListener('click', () => {
+            createIssueModal.classList.add('hidden');
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (event) => {
+            if (event.target === createIssueModal) {
+                createIssueModal.classList.add('hidden');
+            }
+        });
+        
+        // Sample data for demonstration
+        const issues = [
+            {
+                id: '#BUG-124',
+                title: 'Login page not loading on mobile',
+                category: 'UI/UX',
+                project: 'Mobile App',
+                status: 'Open',
+                priority: 'Critical',
+                assignedTo: 'Jane Cooper',
+                role: 'Frontend',
+                dueDate: 'Yesterday',
+                overdue: true
+            },
+            {
+                id: '#BUG-123',
+                title: 'API returns 500 error on large payload',
+                category: 'Backend',
+                project: 'API Development',
+                status: 'In Progress',
+                priority: 'High',
+                assignedTo: 'John Smith',
+                role: 'Backend',
+                dueDate: 'Tomorrow',
+                overdue: false
+            },
+            // More issues...
+        ];
+        
+        // You would typically fetch issues from an API in a real application
+        // fetch('/api/issues')
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         // Process and display issues
+        //     });
+    </script>
+</body>
+</html>
